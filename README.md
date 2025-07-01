@@ -12,30 +12,30 @@ This implementation is based on Andrej Karpathy’s deep learning tutorial and t
 ## Training/Results
 The input, compiled by Andrej Karpathy, contains a collection of Shakespeare’s scripts (seems to be various acts/scenes from Coriolanus, Richard III, Romeo and Juliet, Henry VI, The Winter’s Tale, Measure for Measure, The Taming of the Shrew, The Tempest). After training for almost two hours (!), the model achieves some OK results, acting as a Lorem ipsum generator with Shakespearean flavour. For example:
 
-KING RICHARD II:
-Ratcliff more fable than all proud;
-The trumpets of wanton thousand men
-That enforce the substance of the names:
-The loss when treacherous ground fear of france blood,
-Raise up the villain, because to die:
-Marry, do am Lord Hastings, our hidding-clothed with kings,
-To-day, lord, so much indeed, not with me.
-
-ROMEO:
-Shall I not, so well; but I would be a king;
-Bear thou a king, it moves to no world,
-That I have provided myself most straightly,
-Will take a lost with me to the wall.
-
-FRIAR LAURENCE:
-My brother, would I were a husband for him
-Romeo's grave; one now so he received,
-One that ever was a son so deep as torment.
-Romeo stands me, for more captives worn it.
-
-ROMEO:
-Brave foot-page, peace! thou that thou art poor of Richmond,
-Words thou rather possess'd thy mother's land.
+> **KING RICHARD II:**  
+> Ratcliff more fable than all proud;  
+> The trumpets of wanton thousand men  
+> That enforce the substance of the names:  
+> The loss when treacherous ground fear of France blood,  
+> Raise up the villain, because to die:  
+> Marry, do am Lord Hastings, our hidding-clothed with kings,  
+> To-day, lord, so much indeed, not with me.   
+>  
+> **ROMEO:**  
+> Shall I not, so well; but I would be a king;  
+> Bear thou a king, it moves to no world,  
+> That I have provided myself most straightly,  
+> Will take a lost with me to the wall.  
+>  
+> **FRIAR LAURENCE:**  
+> My brother, would I were a husband for him  
+> Romeo's grave; one now so he received,  
+> One that ever was a son so deep as torment.  
+> Romeo stands me, for more captives worn it.  
+>  
+> **ROMEO:**  
+> Brave foot-page, peace! thou that thou art poor of Richmond,  
+> Words thou rather possess'd thy mother's land.
 
 Considering that this model effectively only predicts the next character, it’s interesting how it is able to form scripts that look coherent until you actually start reading them. It reminds me of those “English for Non-English Speaker” YouTube videos. 
 
