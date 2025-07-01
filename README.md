@@ -5,7 +5,7 @@ GPT in PyTorch to generate text similar to a training example.
 The transformer architecture is incredibly important and it’s time for us to implement it.
 
 ## Architecture
-The model trains according to a custom GPT, and the results are saved to a .pth file. This GPT can then be used in generate_text.py to create either random text or text from an input prompt, where the model will continue where you left off. 
+The model trains in train.py according to a custom GPT defined in model.py, and the results are saved to a .pth file. This GPT can then be used in generate_text.py to create either random text or text from an input prompt, where the model will continue where you left off. 
 
 This implementation is based on Andrej Karpathy’s deep learning tutorial and the seminal paper Attention Is All You Need. I think these resources do a better job of explaining transformer theory, and I follow the typical structure of multi-headed self-attention/feedforward/layer normalization/residual transformer blocks for a decoder-only transformer. 
 
@@ -53,7 +53,7 @@ There is also potential for hyperparameter optimization using some third-party l
 The tokenizer can also be improved beyond character-level. I think my transformer implementation is decent. 
 
 ## References
-Andrej Karpathy’s GPT implementation: https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py 
-Attention is All You Need: https://arxiv.org/pdf/1706.03762   
-Dropout: https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf 
-ResNet: https://arxiv.org/pdf/1512.03385 
+- Andrej Karpathy’s GPT implementation: https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py 
+- Attention is All You Need: https://arxiv.org/pdf/1706.03762   
+- Dropout: https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf 
+- ResNet: https://arxiv.org/pdf/1512.03385 
