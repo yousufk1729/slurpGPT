@@ -42,7 +42,7 @@ Considering that this model effectively only predicts the next character, it’s
 ## Next Steps
 Based on the training vs. validation loss, the model is strongly overfit, even with dropout:
 
-(Graph)
+![Graph](https://github.com/user-attachments/assets/25f5b94c-45a8-4c69-affe-6952550d7a30)
 
 The solution is to have more input text, as the model is already quite large with 10,788,929 total parameters. I want to add my favourites King Lear and Macbeth to the mix. 
 
