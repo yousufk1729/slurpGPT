@@ -7,10 +7,10 @@ The transformer architecture is incredibly important and it’s time for us to i
 ## Architecture
 The model trains in train.py according to a custom GPT defined in model.py, and the results are saved to a .pth file. This GPT can then be used in generate_text.py to create either random text or text from an input prompt, where the model will continue where you left off. 
 
-This implementation is based on Andrej Karpathy’s deep learning tutorial and the seminal paper Attention Is All You Need. I think these resources do a better job of explaining transformer theory, and I follow the typical structure of multi-headed self-attention/feedforward/layer normalization/residual transformer blocks for a decoder-only transformer. 
+This implementation is based on Andrej Karpathy’s deep learning tutorial and the seminal paper *Attention Is All You Need*. I think these resources do a better job of explaining transformer theory, and I follow the typical structure of multi-headed self-attention/feedforward/layer normalization/residual transformer blocks for a decoder-only transformer. 
 
 ## Training/Results
-The input, compiled by Andrej Karpathy, contains a collection of Shakespeare’s scripts (seems to be various acts/scenes from Coriolanus, Richard III, Romeo and Juliet, Henry VI, The Winter’s Tale, Measure for Measure, The Taming of the Shrew, The Tempest). After training for almost two hours (!), the model achieves some OK results, acting as a Lorem ipsum generator with Shakespearean flavour. For example:
+The input, compiled by Andrej Karpathy, contains a collection of Shakespeare’s scripts (seems to be various acts/scenes from *Coriolanus*, *Richard III*, *Romeo and Juliet*, *Henry VI*, *The Winter’s Tale*, *Measure for Measure*, *The Taming of the Shrew*, *The Tempest*). After training for almost two hours (!), the model achieves some OK results, acting as a *Lorem ipsum* generator with Shakespearean flavour. For example:
 
 > **KING RICHARD II:**  
 > Ratcliff more fable than all proud;  
@@ -51,6 +51,9 @@ Given that the training accuracy was continuing to improve, more iterations woul
 There is also potential for hyperparameter optimization using some third-party libraries or just manual testing. 
 
 The tokenizer can also be improved beyond character-level. I think my transformer implementation is decent. 
+
+## Attempted Next Steps
+I tried using GELU to copy OpenAI (seems like GELU is falling out of favour compared to SwiGLU though...). I found that ReLU, which was used in *Attention Is All You Need*, was actually giving better results. 
 
 ## References
 - Andrej Karpathy’s GPT implementation: https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py 

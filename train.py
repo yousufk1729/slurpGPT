@@ -18,29 +18,29 @@ start = time.perf_counter()
 ###############
 
 ############### Tier 2 (166 sec)
-# training_split = 0.9
-# batch_size = 32  # Dimension noted as B
-# block_size = 128  # Dimension noted as T
-# embed_size = 256  
-# num_heads = 8  
-# head_size = embed_size // num_heads 
-# num_layers = 6  
-# dropout = 0.2  
-# num_iters = 1000 
-# learning_rate = 3e-4  
-###############
-
-############### Tier 3 (6746 sec ~ 1 hr, 53 min) :/
 training_split = 0.9
-batch_size = 64  # Dimension noted as B
-block_size = 256  # Dimension noted as T
-embed_size = 384
-num_heads = 6  
+batch_size = 32  # Dimension noted as B
+block_size = 128  # Dimension noted as T
+embed_size = 256  
+num_heads = 8  
 head_size = embed_size // num_heads 
 num_layers = 6  
 dropout = 0.2  
-num_iters = 5000
+num_iters = 1000 
 learning_rate = 3e-4  
+###############
+
+############### Tier 3 (6746 sec ~ 1 hr, 53 min) :/
+# training_split = 0.9
+# batch_size = 64  # Dimension noted as B
+# block_size = 256  # Dimension noted as T
+# embed_size = 384
+# num_heads = 6  
+# head_size = embed_size // num_heads 
+# num_layers = 6  
+# dropout = 0.2  
+# num_iters = 5000
+# learning_rate = 3e-4  
 ###############
 
 # Affects progress printing
@@ -78,9 +78,9 @@ def get_batch(split):
     return x, y
 
 model = GPT(vocab_size, embed_size, num_heads, head_size, num_layers, block_size, dropout, device)
-m = model.to(device)
-m = torch.compile(m)
-print("Model has been initialized with", sum(p.numel() for p in m.parameters()), "parameters")
+model = model.to(device)
+
+print("Model has been initialized with", sum(p.numel() for p in model.parameters()), "parameters")
 print(f"Model training...")
 # Paper uses Adam, Karpathy uses AdamW
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
@@ -91,7 +91,7 @@ for iter in range(num_iters):
     if (iter+1) % print_interval == 0:
         losses = {}
         model.eval()  
-        with torch.no_grad(): 
+        with torch.inference_mode(): 
             for split in ["train", "val"]:
                 split_losses = torch.zeros(eval_iters)
                 for k in range(eval_iters):
