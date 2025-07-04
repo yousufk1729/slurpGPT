@@ -55,11 +55,12 @@ class FeedForward(nn.Module):
     def __init__(self, embed_size, dropout):
         super().__init__()
         self.net = nn.Sequential(
-            # Specifications according to paper
+            # Specifications mostly according to paper
+            # I added dropout after ReLU to match PyTorch transformer implementation
             nn.Linear(embed_size, 4 * embed_size), 
             nn.ReLU(),
-            nn.Linear(4 * embed_size, embed_size),
             nn.Dropout(dropout),
+            nn.Linear(4 * embed_size, embed_size),
         )
 
     def forward(self, x):
@@ -72,11 +73,13 @@ class Block(nn.Module):
         self.ffwd = FeedForward(embed_size, dropout)
         self.ln1 = nn.LayerNorm(embed_size)
         self.ln2 = nn.LayerNorm(embed_size)
+        self.dropout1 = nn.Dropout(dropout)
+        self.dropout2 = nn.Dropout(dropout)
 
     def forward(self, x):
         # Residual connections, paper is post-norm, Karpathy uses pre-norm
-        x = x + self.sa(self.ln1(x)) 
-        x = x + self.ffwd(self.ln2(x))
+        x = x + self.dropout1(self.sa(self.ln1(x)))
+        x = x + self.dropout2(self.ffwd(self.ln2(x)))
         return x
     
 class GPT(nn.Module):

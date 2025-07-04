@@ -2,8 +2,6 @@ import time
 import torch
 from model import GPT
 
-start = time.perf_counter()  
-
 ############### Tier 1 (14 sec)
 # training_split = 0.1
 # batch_size = 32  # Dimension noted as B
@@ -84,6 +82,7 @@ print("Model has been initialized with", sum(p.numel() for p in model.parameters
 print(f"Model training...")
 # Paper uses Adam, Karpathy uses AdamW
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+start = time.perf_counter()  
 
 for iter in range(num_iters):
     # This just prints for us so we don't get bored, there is no effect on training
@@ -100,13 +99,14 @@ for iter in range(num_iters):
                 losses[split] = split_losses.mean()
         model.train()  
         print(f"Step {iter+1}/{num_iters}: Training loss: {losses['train']:.6f}, Validation loss {losses['val']:.6f}")
-    # Actual training
     batch_logits, batch_loss = model(*get_batch("train"))
     optimizer.zero_grad(set_to_none=True)
     batch_loss.backward()
     optimizer.step()
 
-# Save the trained model
+end = time.perf_counter()
+print(f"Total training time: {end - start:.6f} seconds")
+
 checkpoint = {
     'model_state_dict': model.state_dict(),
     'model_config': {
@@ -124,6 +124,3 @@ checkpoint = {
 }
 torch.save(checkpoint, 'params/gpt_model.pth')
 print("Model saved")
-
-end = time.perf_counter()
-print(f"Total elapsed time: {end - start:.6f} seconds")
