@@ -27,17 +27,18 @@ model = model.to(device)
 model.eval()
 
 tokenizer = Tokenizer(device)
+tokenizer.load('params/tokenizer.model')
 
 def generate_text(prompt=""):
     with torch.no_grad():
         if prompt:
             try:
-                context = tokenizer.tokenize_prompt(prompt)
+                context = tokenizer.encode_prompt(prompt)
             except KeyError as e:
                 print(f"Error: Character '{e.args[0]}' not in vocabulary. Using empty prompt instead.")
-                context = tokenizer.default_token
+                context = torch.zeros((1, 1), dtype=torch.long, device=device)
         else:
-            context = tokenizer.default_token
+            context = torch.zeros((1, 1), dtype=torch.long, device=device)
         generated = model.generate(context, max_tokens)
         result = tokenizer.decode(generated[0].tolist())
         return result

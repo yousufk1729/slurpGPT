@@ -5,29 +5,29 @@ from gpt import GPT
 from tokenizer import Tokenizer
 
 ############### Tier 1 (11.4 sec, 3222593 parameters)
-# training_split = 0.1
-# batch_size = 32  # Dimension noted as B
-# block_size = 128  # Dimension noted as T
-# embed_size = 256  
-# num_heads = 8  
-# head_size = embed_size // num_heads 
-# num_layers = 4  
-# dropout = 0.1  
-# num_iters = 100 
-# learning_rate = 5e-4  
-###############
-
-############### Tier 2 (169 sec, 4800577 parameters)
-training_split = 0.9
+training_split = 0.1
 batch_size = 32  # Dimension noted as B
 block_size = 128  # Dimension noted as T
 embed_size = 256  
 num_heads = 8  
 head_size = embed_size // num_heads 
-num_layers = 6  
-dropout = 0.2  
-num_iters = 1000 
-learning_rate = 3e-4  
+num_layers = 4  
+dropout = 0.1  
+num_iters = 100 
+learning_rate = 5e-4  
+###############
+
+############### Tier 2 (169 sec, 4800577 parameters)
+# training_split = 0.9
+# batch_size = 32  # Dimension noted as B
+# block_size = 128  # Dimension noted as T
+# embed_size = 256  
+# num_heads = 8  
+# head_size = embed_size // num_heads 
+# num_layers = 6  
+# dropout = 0.2  
+# num_iters = 1000 
+# learning_rate = 3e-4  
 ###############
 
 ############### Tier 3 (6746 sec ~ 1 hr, 53 min, 10,788,929 parameters) :/
@@ -52,7 +52,7 @@ device = 'cuda'
 
 print(f"Model loading...")
 tokenizer = Tokenizer(device)
-
+tokenizer.load('params/tokenizer.model')
 n = int(training_split*len(tokenizer.tokens))
 train_tokens = tokenizer.tokens[:n]
 val_tokens = tokenizer.tokens[n:]
