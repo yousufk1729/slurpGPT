@@ -1,17 +1,33 @@
 import time
+
 from tokenizer import Tokenizer
+
+# I miss my #ifdef flags
+TRAIN_TOKENIZER = True  # ~87 sec
+VERBOSE_TRAINING = True     
+PRINT_VOCAB = True          
+PRINT_MERGES = True         
+PRINT_TOKEN_COUNT = True    
 
 device = 'cuda'
 
+print(f"Tokenizer initializing...")
 start = time.perf_counter()  
-tokenizer = Tokenizer(device)
-tokenizer.load('params/tokenizer.model')
-# tokenizer.train(verbose=True)
-# tokenizer.save()
-print(tokenizer.vocab)
-print(tokenizer.merges)
-print(tokenizer.pattern)
-print(len(tokenizer.tokens))
-end = time.perf_counter()  
 
-print(f"Training took: {end - start:.6f} seconds")
+tokenizer = Tokenizer(device)
+
+if TRAIN_TOKENIZER:
+    tokenizer.train(verbose=VERBOSE_TRAINING)
+    tokenizer.save()
+else:
+    tokenizer.load('params/tokenizer.model')
+if PRINT_VOCAB:
+    print(tokenizer.vocab)
+if PRINT_MERGES:
+    print(tokenizer.merges)
+if PRINT_TOKEN_COUNT:
+    print(len(tokenizer.tokens))
+
+end = time.perf_counter()  
+operation = "trained" if TRAIN_TOKENIZER else "loaded"
+print(f"Model {operation} in {end - start:.6f} seconds")

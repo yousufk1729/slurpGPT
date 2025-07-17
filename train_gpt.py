@@ -4,53 +4,67 @@ import torch
 from gpt import GPT
 from tokenizer import Tokenizer
 
-############### Tier 1 (11.4 sec, 3222593 parameters)
-training_split = 0.1
-batch_size = 32  # Dimension noted as B
-block_size = 128  # Dimension noted as T
-embed_size = 256  
-num_heads = 8  
-head_size = embed_size // num_heads 
-num_layers = 4  
-dropout = 0.1  
-num_iters = 100 
-learning_rate = 5e-4  
-###############
+# Tier 1 (~13.3 sec)
+# Tier 2 (~173 sec)
+# Tier 3 (~1 hr, 53 min)
+TIER = 2
 
-############### Tier 2 (169 sec, 4800577 parameters)
-# training_split = 0.9
-# batch_size = 32  # Dimension noted as B
-# block_size = 128  # Dimension noted as T
-# embed_size = 256  
-# num_heads = 8  
-# head_size = embed_size // num_heads 
-# num_layers = 6  
-# dropout = 0.2  
-# num_iters = 1000 
-# learning_rate = 3e-4  
-###############
+TIER_CONFIGS = {
+    1: {  
+        'training_split': 0.1,
+        'batch_size': 32,
+        'block_size': 128,
+        'embed_size': 256,
+        'num_heads': 8,
+        'num_layers': 4,
+        'dropout': 0.1,
+        'num_iters': 100,
+        'learning_rate': 5e-4
+    },
+    2: {  
+        'training_split': 0.9,
+        'batch_size': 32,
+        'block_size': 128,
+        'embed_size': 256,
+        'num_heads': 8,
+        'num_layers': 6,
+        'dropout': 0.2,
+        'num_iters': 1000,
+        'learning_rate': 3e-4
+    },
+    3: {  
+        'training_split': 0.9,
+        'batch_size': 64,
+        'block_size': 256,
+        'embed_size': 384,
+        'num_heads': 6,
+        'num_layers': 6,
+        'dropout': 0.2,
+        'num_iters': 5000,
+        'learning_rate': 3e-4
+    }
+}
 
-############### Tier 3 (6746 sec ~ 1 hr, 53 min, 10,788,929 parameters) :/
-# training_split = 0.9
-# batch_size = 64  # Dimension noted as B
-# block_size = 256  # Dimension noted as T
-# embed_size = 384
-# num_heads = 6  
-# head_size = embed_size // num_heads 
-# num_layers = 6  
-# dropout = 0.2  
-# num_iters = 5000
-# learning_rate = 3e-4  
-###############
+config = TIER_CONFIGS[TIER]
+training_split = config['training_split']
+batch_size = config['batch_size']
+block_size = config['block_size']
+embed_size = config['embed_size']
+num_heads = config['num_heads']
+head_size = embed_size // num_heads
+num_layers = config['num_layers']
+dropout = config['dropout']
+num_iters = config['num_iters']
+learning_rate = config['learning_rate']
 
-# Affects progress printing
 print_interval = 100 
 eval_iters = 50 
 
 torch.manual_seed(1729)
 device = 'cuda'
 
-print(f"Model loading...")
+print(f"Model initializing with Tier {TIER} configuration...")
+
 tokenizer = Tokenizer(device)
 tokenizer.load('params/tokenizer.model')
 n = int(training_split*len(tokenizer.tokens))
@@ -71,9 +85,10 @@ model = model.to(device)
 
 print("Model has been initialized with", sum(p.numel() for p in model.parameters()), "parameters")
 print(f"Model training...")
+start = time.perf_counter()  
+
 # Paper uses Adam, Karpathy uses AdamW
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
-start = time.perf_counter()  
 
 for iter in range(num_iters):
     # This just prints for us so we don't get bored, there is no effect on training
@@ -96,7 +111,7 @@ for iter in range(num_iters):
     optimizer.step()
 
 end = time.perf_counter()
-print(f"Total training time: {end - start:.6f} seconds")
+print(f"Model trained in {end - start:.6f} seconds")
 
 checkpoint = {
     'model_state_dict': model.state_dict(),
@@ -108,7 +123,6 @@ checkpoint = {
         'num_layers': num_layers,
         'block_size': block_size,
         'dropout': dropout,
-        'device': device,
     }
 }
 
