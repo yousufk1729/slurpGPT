@@ -5,7 +5,9 @@ GPT in PyTorch to generate text similar to a training example.
 The transformer architecture is incredibly important and it’s time for us to implement it.
 
 ## Architecture
-The model trains in train.py according to a custom GPT defined in model.py, and the results are saved to a .pth file. This GPT can then be used in generate_text.py to create either random text or text from an input prompt, where the model will continue where you left off. 
+train.py: Trains the model according to a custom tokenization algorithm (tokenizer.py) and a custom GPT (gpt.py). Has all of the hyperparameters and device specs
+
+generate.py: Generates either random text or text from an input prompt, where the model will continue where you left off. Only 1 parameter for amount of tokens to generate. 
 
 This implementation is based on Andrej Karpathy’s deep learning tutorial and the seminal paper *Attention Is All You Need*. I think these resources do a better job of explaining transformer theory, and I follow the typical structure of multi-headed self-attention/feedforward/layer normalization/residual transformer blocks for a decoder-only transformer. 
 
@@ -38,6 +40,8 @@ The input, compiled by Andrej Karpathy, contains a collection of Shakespeare’s
 > Words thou rather possess'd thy mother's land.
 
 Considering that this model effectively only predicts the next character, it’s interesting how it is able to form scripts that look coherent until you actually start reading them. It reminds me of those “English for Non-English Speaker” YouTube videos. 
+
+*Edit: I have changed the model without retraining, so currently the "strongest" version of the GPT which I use as an example above does not exist on the latest commit.*
 
 ## Next Steps
 Based on the training vs. validation loss, the model is strongly overfit, even with dropout:
