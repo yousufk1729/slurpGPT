@@ -8,7 +8,7 @@ from tokenizer import Tokenizer
 # Tier 1 (~13.3 sec)
 # Tier 2 (~173 sec)
 # Tier 3 (~1 hr, 53 min)
-TIER = 2
+TIER = 3
 
 TIER_CONFIGS = {
     1: {
@@ -36,11 +36,11 @@ TIER_CONFIGS = {
     3: {
         "training_split": 0.9,
         "batch_size": 64,
-        "block_size": 256,
-        "embed_size": 384,
-        "num_heads": 6,
-        "num_layers": 6,
-        "dropout": 0.2,
+        "block_size": 1024,
+        "embed_size": 768,
+        "num_heads": 12,
+        "num_layers": 12,
+        "dropout": 0, # I love overfitting
         "num_iters": 5000,
         "learning_rate": 3e-4,
     },

@@ -12,7 +12,7 @@ This project has the following files:
 - train_gpt.py: Trains the model. Has most hyperparameters.
 - generate.py: Generates either random text or text from an input prompt, where the model will continue where you left off. Only 1 parameter for amount of tokens to generate. 
 
-This implementation is based primarily on Andrej Karpathy’s deep learning and tokenizer tutorials and the seminal paper *Attention Is All You Need*. I think these resources do a better job of explaining thoery. 
+This implementation is based primarily on Andrej Karpathy’s deep learning and tokenizer tutorials and the seminal paper *Attention Is All You Need*. I think these resources do a better job of explaining theory. 
 
 ## Training/Results
 The input, compiled by Andrej Karpathy, contains a collection of Shakespeare’s scripts (seems to be various acts/scenes from *Coriolanus*, *Richard III*, *Romeo and Juliet*, *Henry VI*, *The Winter’s Tale*, *Measure for Measure*, *The Taming of the Shrew*, *The Tempest*). After training for almost two hours (!), the model achieves some OK results, acting as a *Lorem ipsum* generator with Shakespearean flavour. For example:

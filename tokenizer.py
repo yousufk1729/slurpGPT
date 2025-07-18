@@ -3,8 +3,8 @@ import unicodedata
 import regex
 import torch
 
-input_path = "data/input.txt"
-vocab_size = 512
+input_path = "data/t8.shakespeare.txt"
+vocab_size = 1024
 
 # Taken from:
 # https://github.com/karpathy/minbpe/blob/master/minbpe/regex.py
