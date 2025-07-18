@@ -16,7 +16,7 @@ print("Model initializing...")
 start = time.perf_counter()
 
 if GENERATE_SHAKESPEARE:
-    checkpoint = torch.load("params/gpt_shakespeare_v2.pth", map_location="cpu")
+    checkpoint = torch.load("params/gpt_shakespeare_v3.pth", map_location="cpu")
 else:
     checkpoint = torch.load("params/gpt_model.pth", map_location="cpu")
 
