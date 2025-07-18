@@ -3,7 +3,7 @@ import unicodedata
 import regex
 import torch
 
-input_path = "data/t8.shakespeare.txt"
+input_path = "data/shakespeare.unformatted.txt"
 vocab_size = 1024
 
 # Taken from:

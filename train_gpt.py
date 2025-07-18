@@ -7,7 +7,7 @@ from tokenizer import Tokenizer
 
 # Tier 1 (~13.3 sec)
 # Tier 2 (~173 sec)
-# Tier 3 (~1 hr, 53 min)
+# Tier 3 (~1 hr, 45 min)
 TIER = 3
 
 TIER_CONFIGS = {
@@ -34,12 +34,13 @@ TIER_CONFIGS = {
         "learning_rate": 3e-4,
     },
     3: {
+        # I only have 4 GB of GPU space and a few hours of patience, which limits # of parameters I can try
         "training_split": 0.9,
-        "batch_size": 64,
-        "block_size": 1024,
-        "embed_size": 768,
-        "num_heads": 12,
-        "num_layers": 12,
+        "batch_size": 64, 
+        "block_size": 256,
+        "embed_size": 384,
+        "num_heads": 6,
+        "num_layers": 6,
         "dropout": 0, # I love overfitting
         "num_iters": 5000,
         "learning_rate": 3e-4,
@@ -69,6 +70,7 @@ print(f"Model initializing with Tier {TIER} configuration...")
 tokenizer = Tokenizer(device)
 tokenizer.load("params/tokenizer.model")
 n = int(training_split * len(tokenizer.tokens))
+print(f"Training size: {n} tokens")
 train_tokens = tokenizer.tokens[:n]
 val_tokens = tokenizer.tokens[n:]
 

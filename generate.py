@@ -5,6 +5,9 @@ import torch
 from gpt import GPT
 from tokenizer import Tokenizer
 
+# I miss my #ifdef flags
+GENERATE_SHAKESPEARE = True
+
 max_tokens = 500
 
 device = "cuda"
@@ -12,10 +15,11 @@ device = "cuda"
 print("Model initializing...")
 start = time.perf_counter()
 
-checkpoint = torch.load("params/gpt_model.pth", map_location="cpu")
-# checkpoint = torch.load('params/tier1.pth', map_location='cpu')
-# checkpoint = torch.load('params/tier2.pth', map_location='cpu')
-# checkpoint = torch.load('params/tier3.pth', map_location='cpu')
+if GENERATE_SHAKESPEARE:
+    checkpoint = torch.load("params/gpt_shakespeare_v2.pth", map_location="cpu")
+else:
+    checkpoint = torch.load("params/gpt_model.pth", map_location="cpu")
+
 model_config = checkpoint["model_config"]
 vocab_size = model_config["vocab_size"]
 embed_size = model_config["embed_size"]
