@@ -7,7 +7,7 @@ The transformer architecture is incredibly important and it’s time for us to i
 ## Architecture
 This project has the following files:
 - tokenizer.py: Custom tokenizer using GPT-4 regex pattern + BPE algorithm. Hyperparameter for vocab size. 
-- gpt.py: Custom GPT using typical decoder-only transformer architecture (multi-headed self-attention/feedforward blocks w/ layer normalization/residual connections/dropout). Has a modest 11,526,400 parameters.
+- gpt.py: Custom GPT using typical decoder-only transformer architecture (multi-headed self-attention/feedforward blocks w/ layer normalization/residual connections/dropout). Older version had 10.8 million parameters, newer version has a modest 23,211,008 parameters.
 - train_tokenizer.py: Trains the tokenizer. 
 - train_gpt.py: Trains the model. Has most hyperparameters.
 - generate.py: Generates either random text or text from an input prompt, where the model will continue where you left off. Only 1 parameter for amount of tokens to generate. 
@@ -15,7 +15,7 @@ This project has the following files:
 This implementation is based primarily on Andrej Karpathy’s deep learning and tokenizer tutorials and the seminal paper *Attention Is All You Need*. I think these resources do a better job of explaining theory. 
 
 ## Training/Results
-I used [this](https://www.kaggle.com/datasets/kewagbln/shakespeareonline?resource=download) Shakespeare dataset, which contains Shakespeare’s First Folio (36 plays) + *Pericles, Prince of Tyre*, *The Sonnets*, and *A Lover's Complaint*. However, I didn’t examine it hard enough and I found that it copied the same paragraph of license 218 times along with lots of excess whitespace. After 1 hour and 45 minutes of training on my GTX 1650, the model achieves O.K results, acting as a *Lorem ipsum* generator with Shakespearean flavour. For example:
+An earlier version of my model used character-level tokenization and [this](https://github.com/karpathy/ng-video-lecture/blob/master/input.txt) Shakespeare dataset compiled by Karpathy. It trained for around 2 hours on my laptop's GTX 1650. The model acts as a *Lorem ipsum* generator with Shakespearean flavour. For example:
 
 > **KING RICHARD II:**  
 > Ratcliff more fable than all proud;  
@@ -42,20 +42,38 @@ I used [this](https://www.kaggle.com/datasets/kewagbln/shakespeareonline?resourc
 > Brave foot-page, peace! thou that thou art poor of Richmond,  
 > Words thou rather possess'd thy mother's land.
 
-Considering that this model effectively only predicts the next few characters, it’s interesting how it is able to form scripts that look coherent until you actually start reading them. It reminds me of those “English for Non-English Speaker” YouTube videos. 
+A later version of my model used BPE tokenization with GPT-4 regex and [this](https://www.kaggle.com/datasets/kewagbln/shakespeareonline?resource=download) Shakespeare dataset, which contains Shakespeare’s First Folio (36 plays) + *Pericles, Prince of Tyre*, *The Sonnets*, and *A Lover's Complaint*. After 7 hour and 45 minutes (!) of training, the model achieves O.K results that were honestly worse that I was expecting:
 
-*The above example was generated with an earlier commit, I forgot to copy-paste new examples but the quality is still about the same.*
+> From fairest creatures we desire increase, and stomachs in
+> 
+> Concit the life to other. Other her beauteous left foils
+> 
+> Break the vary in the vessel of the night,
+> 
+> Stood 'twixt my consent and my fault
+> 
+> Those eyes of heaven; and of her favourites
+> 
+> Could make vileom do in them, ending them now
+> 
+> Such trades summon of her devour here
+> 
+> Into a full warlike person and his behalf
+> 
+> The envious statutes at his praise
+> 
+> To pluck mine eyes on you.
+
+Considering that these models effectively only predict the next few characters, it’s interesting how they are able to form scripts that look coherent until you actually start reading them. It reminds me of those “English for Non-English Speaker” YouTube videos. 
 
 ## Next Steps
-Based on the training vs. validation loss, the model is strongly overfit. To be fair, I set the dropout percentage to be zero:
+Based on the training vs. validation loss, the model is strongly overfit. To be fair, I set the dropout percentage to be zero. In hindsight, I shouldn't have done this and the first thing I would try is adding dropout back:
 
 <img width="863" height="538" alt="image" src="https://github.com/user-attachments/assets/bbec329c-75fd-444f-bb47-c1fb762dc54a" />
 
-Given that the training accuracy was continuing to improve, more iterations would also help improve the model. I am not really concerned with overfitting because quite frankly, overfitting data to all of Shakespeare is kind of the goal here. 
+I also think that Karpathy's input text was formatted better than the larger set I ended up using. 
 
-I also want to reformat the input training data to have less whitespace and remove the license copies. *After formatting with some regex, the new file is 4844KB and the old one was 5321KB.*
-
-There is also potential for hyperparameter optimization using some third-party libraries or just manual testing. 
+There is also potential for hyperparameter optimization using some third-party libraries. I think at that point I would just throw in the towel and use tiktokenizer/sentencepiece + huggingface transformers though. 
 
 *The above graph was generated with Claude Sonnet 4 because I was too lazy to format the output data.*
 
