@@ -36,12 +36,12 @@ TIER_CONFIGS = {
     3: {
         # I only have 4 GB of GPU space and a few hours of patience, which limits # of parameters I can try
         "training_split": 0.9,
-        "batch_size": 64, 
+        "batch_size": 64,
         "block_size": 256,
         "embed_size": 384,
         "num_heads": 6,
         "num_layers": 6,
-        "dropout": 0, # I love overfitting
+        "dropout": 0,  # I love overfitting
         "num_iters": 5000,
         "learning_rate": 3e-4,
     },

@@ -3,8 +3,8 @@ import unicodedata
 import regex
 import torch
 
-input_path = "data/shakespeare_unformatted.txt"
-vocab_size = 1024
+input_path = "data/shakespeare.txt"
+vocab_size = 4096
 
 # Taken from:
 # https://github.com/karpathy/minbpe/blob/master/minbpe/regex.py
@@ -14,7 +14,8 @@ GPT4_SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1
 
 def get_bigram_counts(ids, counts=None):
     counts = {} if counts is None else counts
-    for pair in zip(ids, ids[1:]):
+    for i in range(len(ids) - 1):
+        pair = (ids[i], ids[i + 1])
         counts[pair] = counts.get(pair, 0) + 1
     return counts
 
@@ -22,8 +23,9 @@ def get_bigram_counts(ids, counts=None):
 def merge(ids, pair, idx):
     newids = []
     i = 0
+    pair0, pair1 = pair
     while i < len(ids):
-        if ids[i] == pair[0] and i < len(ids) - 1 and ids[i + 1] == pair[1]:
+        if i < len(ids) - 1 and ids[i] == pair0 and ids[i + 1] == pair1:
             newids.append(idx)
             i += 2
         else:
@@ -85,23 +87,24 @@ class Tokenizer:
 
     def encode(self, text):
         text_chunks = regex.findall(self.compiled_pattern, text)
-
         all_ids = []
         for chunk in text_chunks:
             chunk_bytes = chunk.encode("utf-8")
             ids = list(chunk_bytes)
             while len(ids) >= 2:
-                stats = get_bigram_counts(ids)
-                pair = min(stats, key=lambda p: self.merges.get(p, float("inf")))
-                # subtle: if there are no more merges available, the key will
-                # result in an inf for every single pair, and the min will be
-                # just the first pair in the list, arbitrarily
-                # we can detect this terminating case by a membership check
-                if pair not in self.merges:
+                best_pair = None
+                best_idx = float("inf")
+                for i in range(len(ids) - 1):
+                    pair = (ids[i], ids[i + 1])
+                    if pair in self.merges:
+                        merge_idx = self.merges[pair]
+                        if merge_idx < best_idx:
+                            best_idx = merge_idx
+                            best_pair = pair
+                if best_pair is None:
                     break  # nothing else can be merged anymore
-                # otherwise let's merge the best pair (lowest merge index)
-                idx = self.merges[pair]
-                ids = merge(ids, pair, idx)
+                # Merge the best pair
+                ids = merge(ids, best_pair, best_idx)
             all_ids.extend(ids)
         return all_ids
 

@@ -53,7 +53,7 @@ Based on the training vs. validation loss, the model is strongly overfit. To be 
 
 Given that the training accuracy was continuing to improve, more iterations would also help improve the model. I am not really concerned with overfitting because quite frankly, overfitting data to all of Shakespeare is kind of the goal here. 
 
-I also want to reformat the input training data to have less whitespace and remove the license copies. 
+I also want to reformat the input training data to have less whitespace and remove the license copies. *After formatting with some regex, the new file is 4844KB and the old one was 5321KB.*
 
 There is also potential for hyperparameter optimization using some third-party libraries or just manual testing. 
 

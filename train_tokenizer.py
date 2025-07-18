@@ -3,7 +3,7 @@ import time
 from tokenizer import Tokenizer
 
 # I miss my #ifdef flags
-TRAIN_TOKENIZER = True  # ~19 min
+TRAIN_TOKENIZER = True  # ~1 hr 15 min (probably should have wrote this in C with smarter methods and copied it over)
 VERBOSE_TRAINING = True
 PRINT_VOCAB = True
 PRINT_MERGES = True
