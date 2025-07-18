@@ -1,4 +1,5 @@
 import time
+
 import torch
 
 from gpt import GPT
@@ -6,50 +7,61 @@ from tokenizer import Tokenizer
 
 max_tokens = 500
 
-device = 'cuda'
+device = "cuda"
 
-print(f"Model initializing...")
-start = time.perf_counter()  
+print("Model initializing...")
+start = time.perf_counter()
 
-checkpoint = torch.load('params/gpt_model.pth', map_location='cpu')
+checkpoint = torch.load("params/gpt_model.pth", map_location="cpu")
 # checkpoint = torch.load('params/tier1.pth', map_location='cpu')
 # checkpoint = torch.load('params/tier2.pth', map_location='cpu')
 # checkpoint = torch.load('params/tier3.pth', map_location='cpu')
-model_config = checkpoint['model_config']
-vocab_size = model_config['vocab_size']
-embed_size = model_config['embed_size']
-num_heads = model_config['num_heads']
-head_size = model_config['head_size']
-num_layers = model_config['num_layers']
-block_size = model_config['block_size']
-dropout = model_config['dropout']
+model_config = checkpoint["model_config"]
+vocab_size = model_config["vocab_size"]
+embed_size = model_config["embed_size"]
+num_heads = model_config["num_heads"]
+head_size = model_config["head_size"]
+num_layers = model_config["num_layers"]
+block_size = model_config["block_size"]
+dropout = model_config["dropout"]
 
-model = GPT(vocab_size, embed_size, num_heads, head_size, num_layers, block_size, dropout, device)
-model.load_state_dict(checkpoint['model_state_dict'])
+model = GPT(
+    vocab_size,
+    embed_size,
+    num_heads,
+    head_size,
+    num_layers,
+    block_size,
+    dropout,
+    device,
+)
+model.load_state_dict(checkpoint["model_state_dict"])
 model = model.to(device)
 model.eval()
 
 tokenizer = Tokenizer(device)
-tokenizer.load('params/tokenizer.model')
+tokenizer.load("params/tokenizer.model")
 
-end = time.perf_counter()  
+end = time.perf_counter()
 print(f"Model initialzed in {end - start:.6f} seconds")
 
-print("Hit enter for random text. Type input text to use as a prompt. Type 'quit' to exit.")
+print(
+    "Hit enter for random text. Type input text to use as a prompt. Type 'quit' to exit."
+)
 while True:
     try:
         user_input = input("> ")
-        if user_input.lower() in ['quit']:
+        if user_input.lower() in ["quit"]:
             print("Goodbye")
             break
-        print(f"> Generating...")
-        start = time.perf_counter()  
+        print("> Generating...")
+        start = time.perf_counter()
         with torch.no_grad():
             context = tokenizer.encode_prompt(user_input)
             generated = model.generate(context, max_tokens)
             result = tokenizer.decode(generated[0].tolist())
             print(result)
-            end = time.perf_counter()  
+            end = time.perf_counter()
             print(f"Model generated in {end - start:.6f} seconds")
     except KeyboardInterrupt:
         print("Goodbye")
