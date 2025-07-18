@@ -1,6 +1,8 @@
 # slurpGPT
 GPT implementation using only PyTorch to generate text similar to a training example. 
 
+### *Archived. I think I got the educational value I intended to get from this project (not bad for my first time using Python and PyTorch). Eventually, I will rewrite this using a different architecture, some abstraction (using a tokenization/transformer library), better testing (e.g. LAMBADA), more performance optimizations, hyperparameter testing, a cloud GPU service, etc.*
+
 ## Motivation
 The transformer architecture is incredibly important and it’s time for us to implement it. We will only use PyTorch instead of using higher-level libraries (tiktokenizer, sentencepiece, langchain, huggingface) and API wrappers. 
 
@@ -67,7 +69,7 @@ A later version of my model used BPE tokenization with GPT-4 regex and [this](ht
 Considering that these models effectively only predict the next few characters, it’s interesting how they are able to form scripts that look coherent until you actually start reading them. It reminds me of those “English for Non-English Speaker” YouTube videos. 
 
 ## Next Steps
-Based on the training vs. validation loss, the model is dangerously overfit. To be fair, I set the dropout percentage to be zero:
+Based on the training vs. validation loss, the model is dangerously overfit to the point it makes generation worse. To be fair, I set the dropout percentage to be zero:
 
 <img width="891" height="362" alt="image" src="https://github.com/user-attachments/assets/08e94491-7165-457e-96fb-5e5d0fc35258" />
 
