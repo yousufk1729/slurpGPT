@@ -67,13 +67,11 @@ A later version of my model used BPE tokenization with GPT-4 regex and [this](ht
 Considering that these models effectively only predict the next few characters, it’s interesting how they are able to form scripts that look coherent until you actually start reading them. It reminds me of those “English for Non-English Speaker” YouTube videos. 
 
 ## Next Steps
-Based on the training vs. validation loss, the model is strongly overfit. To be fair, I set the dropout percentage to be zero. In hindsight, I shouldn't have done this and the first thing I would try is adding dropout back:
+Based on the training vs. validation loss, the model is dangerously overfit. To be fair, I set the dropout percentage to be zero. In hindsight, I shouldn't have done this and the first thing I would try is adding dropout back:
 
-<img width="863" height="538" alt="image" src="https://github.com/user-attachments/assets/bbec329c-75fd-444f-bb47-c1fb762dc54a" />
+<img width="885" height="362" alt="image" src="https://github.com/user-attachments/assets/399afe03-ecb8-40c3-a4f4-a44a41f17da9" />
 
-I also think that Karpathy's input text was formatted better than the larger set I ended up using. 
-
-There is also potential for hyperparameter optimization using some third-party libraries. I think at that point I would just throw in the towel and use tiktokenizer/sentencepiece + huggingface transformers though. 
+10000 training iterations was also too long. I also think that Karpathy's input text was formatted better than the larger set I ended up using, with stage directions and mixed character name capitalization/spacing adding more confusion. There is also potential for hyperparameter optimization using some third-party libraries. I think at that point I would just throw in the towel and use tiktokenizer/sentencepiece + huggingface transformers though. 
 
 *The above graph was generated with Claude Sonnet 4 because I was too lazy to format the output data.*
 
