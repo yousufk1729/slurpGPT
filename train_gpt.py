@@ -31,7 +31,7 @@ TIER_CONFIGS = {
         "num_layers": 6,
         "dropout": 0.2,
         "num_iters": 1000,
-        "learning_rate": 3e-4,
+        "learning_rate": 1e-3,
     },
     3: {
         # I only have 4 GB of GPU space and a few hours of patience, which limits # of parameters I can try
@@ -41,9 +41,9 @@ TIER_CONFIGS = {
         "embed_size": 384,
         "num_heads": 6,
         "num_layers": 6,
-        "dropout": 0.1,
+        "dropout": 0.2,
         "num_iters": 1000,
-        "learning_rate": 3e-4,
+        "learning_rate": 1e-3,
     },
 }
 

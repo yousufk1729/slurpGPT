@@ -96,23 +96,23 @@ class Tokenizer:
         else:
             context = torch.zeros((1, 1), dtype=torch.long, device=self.device)
         return context
-
-    def decode(self, ids):
-        vocab = self._build_vocab()
-        text_bytes = b"".join(vocab[idx] for idx in ids)
-        text = text_bytes.decode("utf-8", errors="replace")
-        return text
-
-    def _build_vocab(self):
+    
+    def build_vocab(self):
         vocab = {idx: bytes([idx]) for idx in range(256)}
         for (p0, p1), idx in self.merges.items():
             vocab[idx] = vocab[p0] + vocab[p1]
         return vocab
+    
+    def decode(self, ids):
+        vocab = self.build_vocab()
+        text_bytes = b"".join(vocab[idx] for idx in ids)
+        text = text_bytes.decode("utf-8", errors="replace")
+        return text
 
     def save_vocab_human_readable(self, vocab_path="params/tokenizer.vocab"):
         try:
             os.makedirs(os.path.dirname(vocab_path), exist_ok=True)
-            vocab = self._build_vocab()
+            vocab = self.build_vocab()
             with open(vocab_path, "w", encoding="utf-8") as f:
                 for token_id in sorted(vocab.keys()):
                     token_bytes = vocab[token_id]

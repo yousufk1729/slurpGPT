@@ -2,8 +2,7 @@ import time
 
 from tokenizer import Tokenizer
 
-# I miss my #ifdef flags
-TRAIN_TOKENIZER = True
+TRAIN_TOKENIZER = True # 226 seconds
 VERBOSE_TRAINING = True
 PRINT_MERGES = False
 PRINT_TOKEN_COUNT = True

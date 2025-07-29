@@ -150,14 +150,19 @@ class GPT(nn.Module):
             loss = f.cross_entropy(logits_flat, targets_flat)
         return logits, loss
 
-    def generate(self, idx, max_tokens):
+    @torch.no_grad()
+    def generate(self, idx, max_tokens, temperature=1.0, top_k=None):
         for _ in range(max_tokens):
             # Crop idx to the last block_size tokens
-            idx_cond = idx[:, -self.block_size :]
-            # Get predictions (B, T, vocab_size)
+            idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
+            # Forward the model to get the logits for the index in the sequence (B, T, vocab_size)
             logits, _ = self(idx_cond)
-            # Focus only on the last time step (B, vocab_size)
-            logits = logits[:, -1, :]
+            # Focus only on the last time step (B, vocab_size), scale by temperature
+            logits = logits[:, -1, :] / temperature
+            # Can use top-k
+            if top_k is not None:
+                v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+                logits[logits < v[:, [-1]]] = -float('Inf')
             # Softmax, then sample (B, vocab_size) -> (B, 1)
             probs = f.softmax(logits, dim=-1)
             idx_next = torch.multinomial(probs, num_samples=1)

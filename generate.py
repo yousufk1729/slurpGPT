@@ -15,11 +15,10 @@ device = "cuda"
 print("Model initializing...")
 start = time.perf_counter()
 
-if GENERATE_SHAKESPEARE:
-    checkpoint = torch.load("params/gpt_model.pt", map_location="cpu")
-else:
-    checkpoint = torch.load(":p", map_location="cpu")
+tokenizer = Tokenizer(device)
+tokenizer.load()
 
+checkpoint = torch.load("params/gpt_model.pt", map_location="cpu")
 model_config = checkpoint["model_config"]
 vocab_size = model_config["vocab_size"]
 embed_size = model_config["embed_size"]
@@ -43,9 +42,6 @@ model.load_state_dict(checkpoint["model_state_dict"])
 model = model.to(device)
 model.eval()
 
-tokenizer = Tokenizer(device)
-tokenizer.load()
-
 end = time.perf_counter()
 print(f"Model initialzed in {end - start:.6f} seconds")
 
@@ -63,9 +59,7 @@ while True:
         with torch.no_grad():
             context = tokenizer.encode_prompt(user_input)
             generated = model.generate(context, max_tokens)
-
             result = tokenizer.decode(generated[0].tolist())
-
             print(result)
             end = time.perf_counter()
             print(f"Model generated in {end - start:.6f} seconds")
