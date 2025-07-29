@@ -1,15 +1,10 @@
-import unicodedata
+import os
 
-import regex
+import regex as re
 import torch
 
-input_path = "data/shakespeare.txt"
-vocab_size = 4096
-
-# Taken from:
-# https://github.com/karpathy/minbpe/blob/master/minbpe/regex.py
-# https://github.com/openai/tiktoken/blob/main/tiktoken_ext/openai_public.py
-GPT4_SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
+input_path = "data/input.txt"
+vocab_size = 1000
 
 
 def get_bigram_counts(ids, counts=None):
@@ -34,35 +29,22 @@ def merge(ids, pair, idx):
     return newids
 
 
-# Taken from:
-# https://stackoverflow.com/questions/4324790/removing-control-characters-from-a-string-in-python/19016117#19016117
-def render_token(t):
-    s = t.decode("utf-8", errors="replace")
-    chars = []
-    for ch in s:
-        if unicodedata.category(ch)[0] != "C":
-            chars.append(ch)
-        else:
-            chars.append(f"\\u{ord(ch):04x}")
-    return "".join(chars)
-
-
 class Tokenizer:
     def __init__(self, device):
         self.device = device
         with open(input_path, encoding="utf-8") as f:
             self.text = f.read()
         self.vocab_size = vocab_size
-        self.pattern = GPT4_SPLIT_PATTERN
-        self.compiled_pattern = regex.compile(self.pattern)
-        # Changed by load()
-        self.merges = {}  # (int, int), int
-        self.vocab = self._build_vocab()  # int -> bytes
-        self.tokens = {}  # pytorch tensor
+        # GPT-2 regex taken from: https://github.com/openai/tiktoken/blob/main/tiktoken_ext/openai_public.py
+        self.compiled_pattern = re.compile(
+            r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}++| ?\p{N}++| ?[^\s\p{L}\p{N}]++|\s++$|\s+(?!\S)|\s"""
+        )
+        self.merges = None  
+        self.tokens = None  
 
     def train(self, verbose=False):
         num_merges = self.vocab_size - 256
-        text_chunks = regex.findall(self.compiled_pattern, self.text)
+        text_chunks = re.findall(self.compiled_pattern, self.text)
         ids = [list(ch.encode("utf-8")) for ch in text_chunks]
         merges = {}
         vocab = {idx: bytes([idx]) for idx in range(256)}
@@ -80,13 +62,12 @@ class Tokenizer:
                     f"merge {i + 1}/{num_merges}: {pair} -> {idx} ({vocab[idx]}) had {stats[pair]} occurrences"
                 )
         self.merges = merges
-        self.vocab = self._build_vocab()
         self.tokens = torch.tensor(
             self.encode(self.text), dtype=torch.long, device=self.device
         )
 
     def encode(self, text):
-        text_chunks = regex.findall(self.compiled_pattern, text)
+        text_chunks = re.findall(self.compiled_pattern, text)
         all_ids = []
         for chunk in text_chunks:
             chunk_bytes = chunk.encode("utf-8")
@@ -102,8 +83,7 @@ class Tokenizer:
                             best_idx = merge_idx
                             best_pair = pair
                 if best_pair is None:
-                    break  # nothing else can be merged anymore
-                # Merge the best pair
+                    break  
                 ids = merge(ids, best_pair, best_idx)
             all_ids.extend(ids)
         return all_ids
@@ -118,7 +98,8 @@ class Tokenizer:
         return context
 
     def decode(self, ids):
-        text_bytes = b"".join(self.vocab[idx] for idx in ids)
+        vocab = self._build_vocab()
+        text_bytes = b"".join(vocab[idx] for idx in ids)
         text = text_bytes.decode("utf-8", errors="replace")
         return text
 
@@ -128,34 +109,58 @@ class Tokenizer:
             vocab[idx] = vocab[p0] + vocab[p1]
         return vocab
 
-    def save(self):
-        model_file = "params/tokenizer.model"
-        with open(model_file, "w") as f:
-            for idx1, idx2 in self.merges:
-                f.write(f"{idx1} {idx2}\n")
-        vocab_file = "params/tokenizer.vocab"
-        inverted_merges = {idx: pair for pair, idx in self.merges.items()}
-        with open(vocab_file, "w", encoding="utf-8") as f:
-            for idx, token in self.vocab.items():
-                s = render_token(token)
-                if idx in inverted_merges:
-                    idx0, idx1 = inverted_merges[idx]
-                    s0 = render_token(self.vocab[idx0])
-                    s1 = render_token(self.vocab[idx1])
-                    f.write(f"[{s0}][{s1}] -> [{s}] {idx}\n")
-                else:
-                    f.write(f"[{s}] {idx}\n")
+    def save_vocab_human_readable(self, vocab_path="params/tokenizer.vocab"):
+        try:
+            os.makedirs(os.path.dirname(vocab_path), exist_ok=True)
+            vocab = self._build_vocab()
+            with open(vocab_path, "w", encoding="utf-8") as f:
+                for token_id in sorted(vocab.keys()):
+                    token_bytes = vocab[token_id]
+                    try:
+                        decoded_text = token_bytes.decode("utf-8")
+                        if decoded_text.isprintable() and decoded_text not in [
+                            " ",
+                            "\t",
+                            "\n",
+                            "\r",
+                        ]:  
+                            # Remove outer quotes
+                            display_text = repr(decoded_text)[
+                                1:-1 
+                            ]  
+                        else:
+                            display_text = repr(decoded_text)
+                    except UnicodeDecodeError:
+                        display_text = "<invalid utf-8>"
+                    f.write(f"{token_id:>4} -> {token_bytes!r} -> {display_text}\n")
+            print(f"Vocabulary saved to {vocab_path}")
+        except Exception as e:
+            print(f"Failed to save vocabulary: {e}")
+            raise
 
-    def load(self, model_file):
-        merges = {}
-        idx = 256
-        with open(model_file, encoding="utf-8") as f:
-            for line in f:
-                idx1, idx2 = map(int, line.split())
-                merges[(idx1, idx2)] = idx
-                idx += 1
-        self.merges = merges
-        self.vocab = self._build_vocab()
-        self.tokens = torch.tensor(
-            self.encode(self.text), dtype=torch.long, device=self.device
-        )
+    def save(self, model_path="params/tokenizer.pt"):
+        try:
+            os.makedirs(os.path.dirname(model_path), exist_ok=True)
+            state = {
+                "merges": self.merges,
+                "vocab_size": self.vocab_size,
+                "tokens": self.tokens.cpu(),
+            }
+            torch.save(state, model_path)
+            print(f"Tokenizer saved to {model_path}")
+        except Exception as e:
+            print(f"Failed to save tokenizer: {e}")
+            raise
+
+    def load(self, model_path="params/tokenizer.pt"):
+        try:
+            if not os.path.exists(model_path):
+                raise FileNotFoundError(f"Tokenizer file not found: {model_path}")
+            state = torch.load(model_path, map_location="cpu")
+            self.merges = state["merges"]
+            self.vocab_size = state["vocab_size"]
+            self.tokens = state["tokens"].to(self.device)
+            print(f"Tokenizer loaded from {model_path}")
+        except Exception as e:
+            print(f"Failed to load tokenizer: {e}")
+            raise

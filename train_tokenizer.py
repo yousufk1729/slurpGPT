@@ -3,10 +3,9 @@ import time
 from tokenizer import Tokenizer
 
 # I miss my #ifdef flags
-TRAIN_TOKENIZER = True  # ~1 hr 15 min (probably should have wrote this in C with smarter methods and copied it over)
+TRAIN_TOKENIZER = True
 VERBOSE_TRAINING = True
-PRINT_VOCAB = True
-PRINT_MERGES = True
+PRINT_MERGES = False
 PRINT_TOKEN_COUNT = True
 
 device = "cuda"
@@ -19,10 +18,9 @@ tokenizer = Tokenizer(device)
 if TRAIN_TOKENIZER:
     tokenizer.train(verbose=VERBOSE_TRAINING)
     tokenizer.save()
+    tokenizer.save_vocab_human_readable()
 else:
-    tokenizer.load("params/tokenizer.model")
-if PRINT_VOCAB:
-    print(tokenizer.vocab)
+    tokenizer.load()
 if PRINT_MERGES:
     print(tokenizer.merges)
 if PRINT_TOKEN_COUNT:

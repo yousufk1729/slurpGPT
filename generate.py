@@ -8,7 +8,7 @@ from tokenizer import Tokenizer
 # I miss my #ifdef flags
 GENERATE_SHAKESPEARE = True
 
-max_tokens = 500
+max_tokens = 250
 
 device = "cuda"
 
@@ -16,9 +16,9 @@ print("Model initializing...")
 start = time.perf_counter()
 
 if GENERATE_SHAKESPEARE:
-    checkpoint = torch.load("params/gpt_shakespeare_v3.pth", map_location="cpu")
+    checkpoint = torch.load("params/gpt_model.pt", map_location="cpu")
 else:
-    checkpoint = torch.load("params/gpt_model.pth", map_location="cpu")
+    checkpoint = torch.load(":p", map_location="cpu")
 
 model_config = checkpoint["model_config"]
 vocab_size = model_config["vocab_size"]
@@ -44,7 +44,7 @@ model = model.to(device)
 model.eval()
 
 tokenizer = Tokenizer(device)
-tokenizer.load("params/tokenizer.model")
+tokenizer.load()
 
 end = time.perf_counter()
 print(f"Model initialzed in {end - start:.6f} seconds")
@@ -63,7 +63,9 @@ while True:
         with torch.no_grad():
             context = tokenizer.encode_prompt(user_input)
             generated = model.generate(context, max_tokens)
+
             result = tokenizer.decode(generated[0].tolist())
+
             print(result)
             end = time.perf_counter()
             print(f"Model generated in {end - start:.6f} seconds")
