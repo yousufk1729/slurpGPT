@@ -1,4 +1,4 @@
-# slurpGPT
+# shakespeareGPT
 11M-parameter GPT implementation using only PyTorch to generate text similar to a training example. 
 
 ### *Project is basically finished aside from training. I got the educational value I intended to get from this project (first time using Python and PyTorch).*
