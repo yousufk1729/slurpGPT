@@ -17,8 +17,8 @@ num_samples = 100
 context_length = 128
 prediction_length = 5
 k = 5
-seed = 1729
-samples_to_print = 1
+seed = 7355608
+samples_to_print = 5
 
 
 class TopKScorer:
@@ -107,8 +107,8 @@ class TopKScorer:
 
         context_text = self.tokenizer.decode(sample["context"])
         target_text = self.tokenizer.decode(sample["targets"])
-        print(f"Context: '{context_text}'")
-        print(f"Target:  '{target_text}'")
+        print(f"Context: {context_text}")
+        print(f"Target:  {target_text}")
 
         for i, pred in enumerate(sample["predictions"]):
             print(f"\nPrediction {i + 1}:")
@@ -116,14 +116,14 @@ class TopKScorer:
             top_k_tokens = pred["top_k_tokens"]
             probs = pred["probabilities"]
             actual_text = self.tokenizer.decode([actual_token])
-            print(f"Actual: '{actual_text}' (token {actual_token})")
+            print(f"Actual: {repr(actual_text)} (token {actual_token})")
 
-            print(f"Top-{k} predictions:")
+            print(f"Top-{len(top_k_tokens)} predictions:")
             for j, (token_id, prob) in enumerate(zip(top_k_tokens, probs)):
                 marker = " CORRECT" if token_id == actual_token else ""
                 token_text = self.tokenizer.decode([token_id])
                 print(
-                    f"  {j + 1:2d}. '{token_text}' (token {token_id}) - {prob:.1%}{marker}"
+                    f"  {j + 1:2d}. {repr(token_text)} (token {token_id}) - {prob:.1%}{marker}"
                 )
 
 
