@@ -1,8 +1,9 @@
 import os
+import random
 import time
+
 import torch
 import torch.nn.functional as f
-import random
 
 from gpt import GPT
 from tokenizer import Tokenizer
@@ -10,6 +11,7 @@ from tokenizer import Tokenizer
 device = "cuda"
 
 input_path = "data/input.txt"
+model_path = "params/gpt_model_tier3.pt"
 
 num_samples = 100
 context_length = 128
@@ -25,7 +27,7 @@ class TopKScorer:
         self.tokenizer = tokenizer
 
     def score_random_samples(self, text):
-        # random.seed(seed)
+        random.seed(seed)
         tokens = self.tokenizer.encode_prompt(text)
         max_start_pos = tokens.size(1) - context_length - prediction_length
         start_positions = random.sample(
@@ -54,6 +56,7 @@ class TopKScorer:
             # Bad duplicate of the generate function in gpt.py
             # Go there to see how this works i  need to sleep
             current_context = context.clone()
+
             for pred_pos in range(prediction_length):
                 with torch.no_grad():
                     context_cond = (
@@ -61,7 +64,7 @@ class TopKScorer:
                         if current_context.size(1) <= self.model.block_size
                         else current_context[:, -self.model.block_size :]
                     )
-                    logits, _ = self.model(context)
+                    logits, _ = self.model(context_cond)
                     logits = logits[:, -1, :]
 
                 actual_token = target_tokens[:, pred_pos].item()
@@ -86,6 +89,7 @@ class TopKScorer:
                 current_context = torch.cat(
                     (current_context, target_tokens[:, pred_pos : pred_pos + 1]), dim=1
                 )
+
             results["samples"].append(sample_result)
 
         results["accuracy"] = (
@@ -93,7 +97,7 @@ class TopKScorer:
         )
 
         print(
-            f"\nTop-{k} accuracy: {results['accuracy']:.1%} ({results['correct_predictions']}/{num_samples * prediction_length})"
+            f"\nTop-{k} accuracy: {results['accuracy']:.1%} ({results['correct_predictions']}/{results['total_predictions']})"
         )
         return results
 
@@ -130,7 +134,7 @@ def main():
     tokenizer = Tokenizer(device)
     tokenizer.load()
 
-    checkpoint = torch.load("params/gpt_model.pt", map_location="cpu")
+    checkpoint = torch.load(model_path, map_location="cpu")
     model_config = checkpoint["model_config"]
 
     model = GPT(
@@ -152,11 +156,11 @@ def main():
 
     try:
         if not os.path.exists(input_path):
-            raise FileNotFoundError(f"Tokenizer file not found: {input_path}")
-        with open(input_path, "r", encoding="utf-8") as f:
+            raise FileNotFoundError(f"Input file not found: {input_path}")
+        with open(input_path, encoding="utf-8") as f:
             text = f.read().strip()
     except Exception as e:
-        print(f"Failed to load tokenizer: {e}")
+        print(f"Failed to load input file: {e}")
         raise
 
     scorer = TopKScorer(model, tokenizer)

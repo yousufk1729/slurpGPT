@@ -19,11 +19,12 @@ import torch
 from gpt import GPT
 from tokenizer import Tokenizer
 
-max_tokens = 250
-temperature = 1.0
+max_tokens = 1000
+temperature = 0.8
 top_k = 25
 
 device = "cuda"
+model_path = "params/gpt_model_tier3.pt"
 
 print("Model initializing...")
 start = time.perf_counter()
@@ -31,7 +32,8 @@ start = time.perf_counter()
 tokenizer = Tokenizer(device)
 tokenizer.load()
 
-checkpoint = torch.load("params/gpt_model.pt", map_location="cpu")
+# TODO: Add loading function to GPT with some safety checking
+checkpoint = torch.load(model_path, map_location="cpu")
 model_config = checkpoint["model_config"]
 vocab_size = model_config["vocab_size"]
 embed_size = model_config["embed_size"]

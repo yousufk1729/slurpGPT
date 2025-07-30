@@ -14,7 +14,6 @@ import os
 import regex as re
 import torch
 
-input_path = "data/input.txt"
 vocab_size = 1000
 
 
@@ -41,12 +40,17 @@ def merge(ids, pair, idx):
 
 
 class Tokenizer:
-    def __init__(self, device):
+    def __init__(self, device, input_path="data/input.txt"):
         self.device = device
-        with open(input_path, encoding="utf-8") as f:
-            self.text = f.read()
+        try:
+            if not os.path.exists(input_path):
+                raise FileNotFoundError(f"Input file not found: {input_path}")
+            with open(input_path, encoding="utf-8") as f:
+                self.text = f.read()
+        except Exception as e:
+            print(f"Failed to save tokenizer: {e}")
+            raise
         self.vocab_size = vocab_size
-        # GPT-2 regex taken from: https://github.com/openai/tiktoken/blob/main/tiktoken_ext/openai_public.py
         self.compiled_pattern = re.compile(
             r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}++| ?\p{N}++| ?[^\s\p{L}\p{N}]++|\s++$|\s+(?!\S)|\s"""
         )

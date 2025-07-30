@@ -13,8 +13,9 @@ https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py
 https://github.com/karpathy/nanoGPT/blob/master/model.py
 """
 
-import torch
 import math
+
+import torch
 from torch import nn
 from torch.nn import functional as f
 

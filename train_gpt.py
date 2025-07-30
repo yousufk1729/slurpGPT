@@ -13,17 +13,16 @@ https://github.com/karpathy/nanoGPT/blob/master/model.py
 """
 
 import time
-import os
 
 import torch
 
 from gpt import GPT
 from tokenizer import Tokenizer
 
-# Tier 1 (~13.3 sec)
-# Tier 2 (~320 sec)
-# Tier 3 (~7 hr 35 min)
-TIER = 3
+# Tier 1 (~15 sec)
+# Tier 2 (~170 sec)
+# Tier 3 (~2 hr 10 min)
+TIER = 2
 
 TIER_CONFIGS = {
     1: {
@@ -49,7 +48,8 @@ TIER_CONFIGS = {
         "learning_rate": 1e-3,
     },
     3: {
-        # I only have 4 GB of GPU space and a few hours of patience, which limits # of parameters I can try
+        # I have 4 GB of GPU space and a few hours of patience, which limits # of parameters I can try
+        # Based on Karpathy's training values
         "training_split": 0.9,
         "batch_size": 64,
         "block_size": 256,
@@ -57,7 +57,7 @@ TIER_CONFIGS = {
         "num_heads": 6,
         "num_layers": 6,
         "dropout": 0.2,
-        "num_iters": 1000,
+        "num_iters": 3000,  # Should stop early tho
         "learning_rate": 1e-3,
     },
 }
@@ -75,10 +75,8 @@ num_iters = config["num_iters"]
 learning_rate = config["learning_rate"]
 
 print_interval = 100
-eval_iters = 200
-
-patience = 5  # Number of print_intervals to wait for improvement
-early_stop_threshold = 1e-4  # Minimum improvement to be considered significant
+eval_iters = 50
+patience = 5
 
 torch.manual_seed(1729)
 device = "cuda"
@@ -103,6 +101,7 @@ def get_batch(split):
     return x, y
 
 
+# TODO: Add loading function to GPT with some safety checking
 def save_checkpoint(
     model,
     tokenizer,
@@ -174,7 +173,7 @@ for iter in range(num_iters):
             f"Step {iter + 1}/{num_iters}: Training loss: {losses['train']:.6f}, Validation loss {current_val_loss:.6f}"
         )
 
-        if current_val_loss < best_val_loss - early_stop_threshold:
+        if current_val_loss < best_val_loss:
             best_val_loss = current_val_loss
             patience_counter = 0
             save_checkpoint(

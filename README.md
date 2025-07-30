@@ -1,7 +1,7 @@
 # slurpGPT
 GPT implementation using only PyTorch to generate text similar to a training example. 
 
-### *Archived. I think I got the educational value I intended to get from this project (not bad for my first time using Python and PyTorch).*
+### *Archived. I got the educational value I intended to get from this project (first time using Python and PyTorch).*
 
 ## Motivation
 
