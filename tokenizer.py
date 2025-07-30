@@ -1,3 +1,14 @@
+"""
+tokenizer.py
+Custom tokenizer using BPE algorithm + GPT-2 regex.
+Hyperparameter for vocab size.
+
+https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf (Section 2.2)
+https://github.com/karpathy/minbpe/blob/master/minbpe/regex.py
+https://github.com/openai/tiktoken/blob/main/tiktoken_ext/openai_public.py
+https://tiktokenizer.vercel.app/?model=gpt2
+"""
+
 import os
 
 import regex as re
@@ -39,8 +50,8 @@ class Tokenizer:
         self.compiled_pattern = re.compile(
             r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}++| ?\p{N}++| ?[^\s\p{L}\p{N}]++|\s++$|\s+(?!\S)|\s"""
         )
-        self.merges = None  
-        self.tokens = None  
+        self.merges = None
+        self.tokens = None
 
     def train(self, verbose=False):
         num_merges = self.vocab_size - 256
@@ -83,7 +94,7 @@ class Tokenizer:
                             best_idx = merge_idx
                             best_pair = pair
                 if best_pair is None:
-                    break  
+                    break
                 ids = merge(ids, best_pair, best_idx)
             all_ids.extend(ids)
         return all_ids
@@ -96,13 +107,13 @@ class Tokenizer:
         else:
             context = torch.zeros((1, 1), dtype=torch.long, device=self.device)
         return context
-    
+
     def build_vocab(self):
         vocab = {idx: bytes([idx]) for idx in range(256)}
         for (p0, p1), idx in self.merges.items():
             vocab[idx] = vocab[p0] + vocab[p1]
         return vocab
-    
+
     def decode(self, ids):
         vocab = self.build_vocab()
         text_bytes = b"".join(vocab[idx] for idx in ids)
@@ -123,11 +134,9 @@ class Tokenizer:
                             "\t",
                             "\n",
                             "\r",
-                        ]:  
+                        ]:
                             # Remove outer quotes
-                            display_text = repr(decoded_text)[
-                                1:-1 
-                            ]  
+                            display_text = repr(decoded_text)[1:-1]
                         else:
                             display_text = repr(decoded_text)
                     except UnicodeDecodeError:

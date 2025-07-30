@@ -1,23 +1,49 @@
 # slurpGPT
 GPT implementation using only PyTorch to generate text similar to a training example. 
 
-### *Archived. I think I got the educational value I intended to get from this project (not bad for my first time using Python and PyTorch). Eventually, I will rewrite this using a different architecture, some abstraction (using a tokenization/transformer library), better testing (e.g. LAMBADA), more performance optimizations, hyperparameter testing, a cloud GPU service, etc.*
+### *Archived. I think I got the educational value I intended to get from this project (not bad for my first time using Python and PyTorch).*
 
 ## Motivation
-The transformer architecture is incredibly important and it’s time for us to implement it. We will only use PyTorch instead of using higher-level libraries (tiktokenizer, sentencepiece, langchain, huggingface) and API wrappers. 
 
-## Architecture
-This project has the following files:
-- tokenizer.py: Custom tokenizer using GPT-4 regex pattern + BPE algorithm. Hyperparameter for vocab size. 
-- gpt.py: Custom GPT using typical decoder-only transformer architecture (multi-headed self-attention/feedforward blocks w/ layer normalization/residual connections/dropout). Older version had 10.8 million parameters, newer version has a modest 23,211,008 parameters.
-- train_tokenizer.py: Trains the tokenizer. 
-- train_gpt.py: Trains the model. Has most hyperparameters.
-- generate.py: Generates either random text or text from an input prompt, where the model will continue where you left off. Only 1 parameter for amount of tokens to generate. 
+The transformer architecture is incredibly important and it’s time for us to implement it. We will only use PyTorch instead of using higher-level libraries (tiktokenizer, sentencepiece, langchain, huggingface) or creating an API wrapper (hackathon-style). 
 
-This implementation is based primarily on Andrej Karpathy’s deep learning and tokenizer tutorials and the seminal paper *Attention Is All You Need*. I think these resources do a better job of explaining theory. 
+## Tokenizer
+
+The tokenizer is an unfaithful reproduction of OpenAI’s GPT-2 tokenizer; it uses the common byte-pair encoding algorithm (BPE) with a regex pattern to prevent unnecessary merges [1, section 2.2]. The implementation is quite simple: I used Karpathy’s code as a starting point and I copied the regex pattern directly from OpenAI’s tiktokenizer library [2] [3]. 
+
+When training, I cut off the vocabulary size at 1000 to decrease computation time (3-4 minutes). I trained the tokenizer on a small corpus of Shakespeare’s plays, originally created by Karpathy [4]. 
+
+To play around with the full GPT-2 tokenization, I suggest this app I found: (link) [5]. 
+
+## GPT Architecture
+
+The theory behind this architecture is primarily based on OpenAi’s GPT-2 paper, which is itself based on the GPT-1 paper and four other seminal papers: Attention Is All You Need, Layer Normalization, Deep Residual Learning for Image Recognition, and Dropout [1, section 2.3] [6] [7] [8] [9] [10]. I’m quite happy to see that the University of Toronto appears on a few of these papers because it makes my tuition cost feel slightly more justified. 
+
+The implementation is based on Karpathy’s GPT implementations, which I highly recommend for any student [11] [12]. I was also frequently checking PyTorch documentation, which itself links to many of the above papers. 
+
+If I had to summarize, I would describe the model as a simple decoder-only transformer with blocks containing multi-head attention and a feedforward network, with some tricks (layer norm, dropout, residuals w/ scaled weights, weight tying) to improve computation/avoid overfitting. The total model has () parameters.
+
+Below is a flowchart with relevant details. The code is also quite heavily annotated. 
+
+(I will eventually make this into a flowchart)
+
+(Input text) → Token embedding + positional embedding → N blocks →
+
+Each block: LayerNorm → Multi-Head Attention with Causal Masking → Dropout → Residual Connection -> LayerNorm → Feed Forward (single hidden layer with 4x nodes, GELU)→ Dropout → Residual Connection →
+
+Output of N blocks → layer norm → linear layer (de-embedding/output projection) → (Output text)
+
+To match GPT-2:
+- Weight tying input embedding weights with output projection weights
+- GeLU in feedforward networks
+- Scaled initialization for residual projection weights
+- Pre-layer normalization along with additional layer normalization after all blocks
+
+PyTorch-specific:
+- Flash attention to make the scaled dot-products compute faster
 
 ## Training/Results
-An earlier version of my model used character-level tokenization and [this](https://github.com/karpathy/ng-video-lecture/blob/master/input.txt) Shakespeare dataset compiled by Karpathy. It trained for around 2 hours on my laptop's GTX 1650. The model acts as a *Lorem ipsum* generator with Shakespearean flavour. For example:
+I used various weights for different training speeds, including weights recommended by Karpathy in his implementations [11] [12]. This model trained for (time) on my laptop's GTX 1650. The model acts as a *Lorem ipsum* generator with Shakespearean flavour. For example, here is some text from an older version:
 
 > **KING RICHARD II:**  
 > Ratcliff more fable than all proud;  
@@ -44,48 +70,29 @@ An earlier version of my model used character-level tokenization and [this](http
 > Brave foot-page, peace! thou that thou art poor of Richmond,  
 > Words thou rather possess'd thy mother's land.
 
-A later version of my model used BPE tokenization with GPT-4 regex and [this](https://www.kaggle.com/datasets/kewagbln/shakespeareonline?resource=download) Shakespeare dataset, which contains Shakespeare’s First Folio (36 plays) + *Pericles, Prince of Tyre*, *The Sonnets*, and *A Lover's Complaint*. After 7 hour and 45 minutes (!) of training, the model achieves O.K results that were honestly worse that I was expecting:
+Considering that this model effectively only predicts the next few characters, it’s interesting how it is able to form scripts that look coherent until you actually start reading them. It reminds me of those “What English Sounds Like To Non-English Speakers” YouTube videos. 
 
-> From fairest creatures we desire increase, and stomachs in
-> 
-> Concit the life to other. Other her beauteous left foils
-> 
-> Break the vary in the vessel of the night,
-> 
-> Stood 'twixt my consent and my fault
-> 
-> Those eyes of heaven; and of her favourites
-> 
-> Could make vileom do in them, ending them now
-> 
-> Such trades summon of her devour here
-> 
-> Into a full warlike person and his behalf
-> 
-> The envious statutes at his praise
-> 
-> To pluck mine eyes on you.
+I also added a top-k scorer which feeds 100 Shakespeare lines as context into the model, which then predicts the k most likely tokens to appear after. 
 
-Considering that these models effectively only predict the next few characters, it’s interesting how they are able to form scripts that look coherent until you actually start reading them. It reminds me of those “English for Non-English Speaker” YouTube videos. 
+(add results of that here)
 
 ## Next Steps
-Based on the training vs. validation loss, the model is dangerously overfit to the point it makes generation worse. To be fair, I set the dropout percentage to be zero:
+Based on the training vs. validation loss, the model is quite overfit:
 
-<img width="891" height="362" alt="image" src="https://github.com/user-attachments/assets/08e94491-7165-457e-96fb-5e5d0fc35258" />
+(img)
 
-In hindsight, I shouldn't have done this and the first thing I would try is adding dropout back. I would also decrease the training iterations to 2500. I also think that Karpathy's input text was formatted better than the larger set I ended up using, with stage directions and mixed character name capitalization/spacing adding more confusion. 
+I do feel a bit limited by my computational resources; paying for a cloud GPU service is overkill for this educational exercise. I would like to try some more hyperparameter optimization techniques with the validation data and other methods of testing. 
 
-There is also potential for hyperparameter optimization using some third-party libraries. I think at that point I would just throw in the towel and use tiktokenizer/sentencepiece + huggingface transformers though. 
-
-*The above graph was generated with Claude Sonnet 4 because I was too lazy to format the output data.*
-
-## Attempted Next Steps
-I tried using GELU to copy OpenAI (seems like GELU is falling out of favour compared to SwiGLU though...). I found that ReLU, which was used in *Attention Is All You Need*, was actually giving better results. 
-
-## References
-- Andrej Karpathy’s GPT implementation: https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py
-- Andrej Karpathy's tokenizer implementation: https://github.com/karpathy/minbpe/blob/master/minbpe/regex.py
-- Shakespeare: https://www.kaggle.com/datasets/kewagbln/shakespeareonline?resource=download
-- Attention is All You Need: https://arxiv.org/pdf/1706.03762   
-- Dropout: https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf 
-- ResNet: https://arxiv.org/pdf/1512.03385 
+## References (IEEE coming later)
+- [1] https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf 
+- [2] https://github.com/karpathy/minbpe/blob/master/minbpe/regex.py  
+- [3] https://github.com/openai/tiktoken/blob/main/tiktoken_ext/openai_public.py 
+- [4] https://github.com/karpathy/ng-video-lecture/blob/master/input.txt 
+- [5] https://tiktokenizer.vercel.app/?model=gpt2 
+- [6] https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf 
+- [7] https://arxiv.org/pdf/1706.03762 
+- [8] https://arxiv.org/pdf/1607.06450 
+- [9] https://arxiv.org/pdf/1512.03385 
+- [10] https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf 
+- [11] https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py 
+- [12] https://github.com/karpathy/nanoGPT/blob/master/model.py 

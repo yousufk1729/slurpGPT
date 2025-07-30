@@ -1,3 +1,17 @@
+"""
+generate.py
+Generate some text with the GPT.
+
+https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf
+https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf
+https://arxiv.org/pdf/1706.03762
+https://arxiv.org/pdf/1607.06450
+https://arxiv.org/pdf/1512.03385
+https://www.cs.toronto.edu/~rsalakhu/papers/srivastava14a.pdf
+https://github.com/karpathy/ng-video-lecture/blob/master/gpt.py
+https://github.com/karpathy/nanoGPT/blob/master/model.py
+"""
+
 import time
 
 import torch
@@ -5,10 +19,9 @@ import torch
 from gpt import GPT
 from tokenizer import Tokenizer
 
-# I miss my #ifdef flags
-GENERATE_SHAKESPEARE = True
-
 max_tokens = 250
+temperature = 1.0
+top_k = 25
 
 device = "cuda"
 
@@ -58,7 +71,7 @@ while True:
         start = time.perf_counter()
         with torch.no_grad():
             context = tokenizer.encode_prompt(user_input)
-            generated = model.generate(context, max_tokens)
+            generated = model.generate(context, max_tokens, temperature, top_k)
             result = tokenizer.decode(generated[0].tolist())
             print(result)
             end = time.perf_counter()

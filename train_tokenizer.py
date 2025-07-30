@@ -1,8 +1,16 @@
+"""
+train_tokenizer.py
+Train the tokenizer on some input text.
+Boolean flags modify what gets printed and whether the program should train/load.
+
+https://github.com/karpathy/ng-video-lecture/blob/master/input.txt
+"""
+
 import time
 
 from tokenizer import Tokenizer
 
-TRAIN_TOKENIZER = True # 226 seconds
+TRAIN_TOKENIZER = True  # 226 seconds
 VERBOSE_TRAINING = True
 PRINT_MERGES = False
 PRINT_TOKEN_COUNT = True
