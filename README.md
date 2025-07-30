@@ -118,14 +118,68 @@ Here is some text from an older version:
 
 Considering that this model effectively only predicts the next few characters, it’s interesting how it is able to form scripts that look coherent until you actually start reading them. It reminds me of those “What English Sounds Like To Non-English Speakers” YouTube videos. 
 
-I also added a top-k scorer which feeds 100 Shakespeare lines as context into the model, which then predicts the k most likely tokens to appear after. 
+I also added a top-k scorer which feeds 100 Shakespeare lines as context into the model, which then predicts the k most likely tokens to appear after. After each guess, the correct token is added to the context and the model guesses again. This is my half-asses solution to the model not knowing what a "word" is (i.e. predicting the next word, which is a normal task for something like LAMBADA, is not something my model is set up to do). Implementation is based on my GPT generator, and I do want to clean up this class. The top-5 accuracy seems to be around 65%, and I have no idea if this is a good number. The issue is that my tokenizer vocabulary is so little that I still have character-level tokens, which causes words that don't exist to be generated. Of course, my model also hasn't trained for long with lots of parameters.
 
-(add results of that here)
+## Sample 1: Richard III
+
+**Context:**
+```
+I cry thee mercy:
+There is my purse to cure that blow of thine.
+Hath any well-advised friend proclaim'd
+Reward to him that brings the traitor in?
+Third Messenger:
+Such proclamation hath been made, my liege.
+Fourth Messenger:
+Sir Thomas Lovel and Lord Marquis Dorset,
+'Tis said, my liege, in Yorks
+```
+
+**Target:** ` hire are in arm`
+
+### Predictions
+
+| Step | Actual Token | Top-5 Predictions |
+|------|--------------|-------------------|
+| **1** | `'hi'` (372) | 1. `','` (44) - **32.8%** <br> 2. `'hi'` (372) - **32.5%** ✅ <br> 3. `'.'` (46) - **20.8%** <br> 4. `':'` (58) - **7.1%** <br> 5. `' and'` (296) - **6.8%** |
+| **2** | `'re'` (264) | 1. `'re'` (264) - **80.4%** ✅ <br> 2. `'p'` (112) - **18.2%** <br> 3. `'ps'` (942) - **0.6%** <br> 4. `'m'` (109) - **0.4%** <br> 5. `'e'` (101) - **0.3%** |
+| **3** | `' are'` (418) | 1. `','` (44) - **47.3%** <br> 2. `' is'` (324) - **17.0%** <br> 3. `"'s"` (320) - **12.5%** <br> 4. `':'` (58) - **12.4%** <br> 5. `'!'` (33) - **10.8%** |
+| **4** | `' in'` (307) | 1. `' in'` (307) - **28.7%** ✅ <br> 2. `' f'` (271) - **22.7%** <br> 3. `' made'` (752) - **18.5%** <br> 4. `' with'` (336) - **16.4%** <br> 5. `' al'` (665) - **13.6%** |
+| **5** | `' arm'` (901) | 1. `' arm'` (901) - **78.4%** ✅ <br> 2. `' the'` (267) - **6.7%** <br> 3. `' our'` (412) - **5.6%** <br> 4. `' his'` (347) - **4.7%** <br> 5. `' hand'` (635) - **4.5%** |
+
+## Sample 2: Romeo & Juliet
+
+**Context:**
+```
+I'll have this knot knit up to-morrow morning.
+JULIET:
+I met the youthful lord at Laurence' cell;
+And gave him what becomed love I might,
+Not step o'er the bounds of modesty.
+CAPULET:
+Why, I am glad on't; this is well: stand up:
+This is as't should be. Let me see the county;
+Ay, marry, go, I say
+```
+
+**Target:** `, and fetch`
+
+### Predictions
+
+| Step | Actual Token | Top-5 Predictions |
+|------|--------------|-------------------|
+| **1** | `','` (44) | 1. `','` (44) - **67.4%** ✅ <br> 2. `" '"` (438) - **14.2%** <br> 3. `'.'` (46) - **9.7%** <br> 4. `';'` (59) - **4.9%** <br> 5. `' I'` (291) - **3.8%** |
+| **2** | `' and'` (296) | 1. `' I'` (291) - **39.4%** <br> 2. `' go'` (482) - **21.6%** <br> 3. `' and'` (296) - **14.9%** ✅ <br> 4. `' be'` (304) - **14.3%** <br> 5. `' to'` (287) - **9.7%** |
+| **3** | `' f'` (271) | 1. `' I'` (291) - **43.2%** <br> 2. `' let'` (537) - **17.0%** <br> 3. `' tell'` (701) - **14.4%** <br> 4. `' you'` (288) - **14.1%** <br> 5. `','` (44) - **11.4%** |
+| **4** | `'et'` (314) | 1. `'et'` (314) - **32.8%** ✅ <br> 2. `'ind'` (501) - **20.0%** <br> 3. `'oo'` (332) - **16.6%** <br> 4. `'ull'` (838) - **15.7%** <br> 5. `'ell'` (408) - **14.9%** |
+| **5** | `'ch'` (322) | 1. `'ch'` (322) - **97.8%** ✅ <br> 2. `'ter'` (404) - **1.7%** <br> 3. `'che'` (998) - **0.3%** <br> 4. `'he'` (257) - **0.1%** <br> 5. `'ite'` (888) - **0.0%** |
+
+This is quite fun to play around with and helps elucidate the idea of all LLMs just being functions that determine probabilites of subsequent tokens. 
 
 ## Next Steps
-Based on the training vs. validation loss, the model is quite overfit. I added early stopping before it got too bad:
+Based on the training vs. validation loss, the model is quite overfit, which is a consequence of the model not actually doing anything with the validation data to improve hyperparameters. I added early stopping before it got too bad:
 
-(img)
+<img width="1920" height="967" alt="training" src="https://github.com/user-attachments/assets/6529c77c-12a3-484e-9436-854f78225ccd" />
 
 I do feel a bit limited by my computational resources; paying for a cloud GPU service is overkill for this educational exercise. I would like to try some more hyperparameter optimization techniques with the validation data and other methods of testing. 
 
