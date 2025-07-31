@@ -25,7 +25,7 @@ If I had to summarize, I would describe the model as a simple decoder-only trans
 
 Below is a flowchart with relevant details. The code is also quite heavily annotated. 
 
-<img width="800" height="1729" alt="Flowchart" src="https://github.com/user-attachments/assets/362ade30-b4e9-4a86-9f61-1ade62aadde5" />
+<img width="400" height="864" alt="Flowchart" src="https://github.com/user-attachments/assets/362ade30-b4e9-4a86-9f61-1ade62aadde5" />
 
 To match GPT-2:
 - Weight tying input embedding weights with output projection weights
