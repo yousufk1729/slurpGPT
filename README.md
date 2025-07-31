@@ -25,19 +25,16 @@ If I had to summarize, I would describe the model as a simple decoder-only trans
 
 Below is a flowchart with relevant details. The code is also quite heavily annotated. 
 
-(I will eventually make this into a flowchart)
-
-> (Input text) → Token embedding + positional embedding → N blocks →
->
-> Each block: LayerNorm → Multi-Head Attention with Causal Masking → Dropout → Residual Connection -> LayerNorm → Feed Forward (single hidden layer with 4x nodes, GELU)→ Dropout → Residual Connection →
->
-> Output of N blocks → layer norm → linear layer (de-embedding/output projection) → (Output text)
+<img width="800" height="1729" alt="Flowchart" src="https://github.com/user-attachments/assets/362ade30-b4e9-4a86-9f61-1ade62aadde5" />
 
 To match GPT-2:
 - Weight tying input embedding weights with output projection weights
-- GeLU in feedforward networks
+- Feedforward layer has single hidden layer with 4x nodes, GELU
 - Scaled initialization for residual projection weights
 - Pre-layer normalization along with additional layer normalization after all blocks
+
+To match *Attention is All You Need*:
+- Multi-Head Attention with Causal Masking, formula taken direction from paper for the scaled dot-product attention and the multi-head architecture with the concatenation at the end
 
 PyTorch-specific:
 - Flash attention to make the scaled dot-products compute faster
